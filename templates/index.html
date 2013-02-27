@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block contents %}
+<div class="span12">
+
+    {% for period, courses in courses.iteritems() %}
+        <h2>Électifs {{period}}</h2>
+        
+       	{% for course in courses %}
+       		<div class="course" data-course-id="{{ course.id }}" data-course-name="{{ course.name }}">
+       			<div class="course-heading container">
+        			<div class="row">
+        				<div class="span6"><i class="course-name-icon icon-chevron-down"></i> <a class="course-name" href="#">{{course.name}}</a></div>
+        				<div class="span3">{{course.teacher_name|default('')}}</div>
+        				<div class="span3">{% if averages[course.id] %} {{averages[course.id]}} / 5 ({{ratings_count[course.id]}} avis){% endif %}</div>
+        			</div>
+        		</div>
+       			<div class="course-ratings">
+       				<!-- ratings loaded via AJAX -->
+       				<div class="course-post-rating container">
+       					<div class="row">
+       						<div class="span9"><div class="course-rating-remark">
+        						<a class="btn btn-primary btn-post-rating" href="">Écrire un avis</a>
+       						</div></div>
+       						<div class="span3"></div>
+       					</div>
+       				</div>
+       			</div>
+       		</div>
+       	{% endfor %}
+    {% endfor %}
+</div>
+
+<div class="template" id="tpl-course-rating">
+	<div class="course-rating container">
+		<div class="row">
+			<div class="span9"><div class="course-rating-remark">{remark}</div></div>
+			<div class="span3"><div class="course-rating-stars">{stars} / 5</div></div>
+		</div>
+	</div>
+</div>
+
+<div id="modal-post-rating" class="modal fade"></div>
+
+<div class="template" id="tpl-modal-post-rating">
+	<div class="modal-header">
+		<h3>Écrire un avis</h3>
+	</div>
+	<div class="modal-body">
+		<form id="form-post-rating" class="form-horizontal">
+			<div class="control-group">
+				<label class="control-label">Électif :</label>
+				<div class="controls"><label><strong>{course_name}</strong></label></div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">Note :</label>
+				<div class="controls">
+					<select id="form-stars" class="input-small">
+					{% for i in range(0, 6) %}
+						<option value="{{i}}">{{i}} / 5</option>
+					{% endfor %}
+					</select>
+				</div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">Commentaires :</label>
+				<div class="controls"><textarea id="form-remark" style="width: 90%; height: 7em; resize: vertical;"></textarea></div>
+			</div>
+			<div class="control-group">
+				<label class="control-label">E-mail :</label>
+				<div class="controls">
+					<div class="input-append">
+						<input type="text" id="form-email" />
+						<span class="add-on">@student.ecp.fr</span>
+					</div>
+				</div>
+			</div>
+		</form>
+		
+		<ul>
+			<li>Ton e-mail ne sera pas publié. Il sert à éviter qu'une même personne ne publie plusieurs avis sur le même électif
+			(un mail de vérification te sera envoyé à cet effet).</li>
+			<li>Une fois l'avis envoyé, les modérateurs le reliront et te contacteront s'il ne peut pas être publié tel quel.</li>
+		</ul>
+	</div>
+	<div class="modal-footer">
+		<a href="#" data-dismiss="modal" style="float: left;">Annuler</a>
+		<button type="button" class="btn btn-success" data-loading-text="Envoi...">Envoyer</button>
+	</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,29 @@
+# -*- coding: utf-8 -*-
+
+import flask
+
+app = flask.Flask(__name__)
+
+@app.route('/')
+def index ():
+	return flask.render_template('base.html',
+		title="Electifs ECP",
+		greeting=u"Bienvenue sur le site des électifs"
+	)
+
+
+@app.route('/directory')
+def directory ():
+	return "Directory"
+
+
+@app.route('/directory/profile')
+def directory_profile ():
+	
+	login = flask.request.args.get('login', '')
+	return "<h1>Profile for '%s'</h1>" % (login)
+
+
+
+app.run(debug=True)
+

@@ -1,0 +1,62 @@
+h2 {
+	margin-top: 1em;
+}
+
+.course-heading {
+	margin-top: 1em;
+	padding-bottom: 0.5ex;
+	border-bottom: 1px dotted #aaa;
+}
+
+.active-course .course-heading {
+	
+}
+
+.stars-wrapper {
+	display: inline-block;
+	vertical-align: -5px;
+}
+
+a.course-name {
+	color: black;
+	font-weight: bold;
+}
+
+.course-ratings {
+	border-left: 1px solid #ccc;
+	border-right: 1px solid #ccc;
+	border-bottom: 1px solid #ccc;
+	overflow: hidden;
+	
+	box-shadow: 0 2px 6px #aaa;
+	
+	display: none;
+}
+
+.course-rating:nth-child(odd) {
+	background-color: #eee;
+}
+
+.course-rating:nth-child(even) {
+	background-color: #f6f6f6;
+}
+
+.course-rating-remark {
+	padding: 1ex 3em 1.5ex 2em;
+}
+
+.course-rating-stars {
+	padding: 1ex 1em 1.5ex 0;
+}
+
+ #modal-post-rating label.control-label {
+	width: 120px;
+}
+
+#modal-post-rating .controls {
+	margin-left: 140px;
+}
+
+.template {
+	display: none;
+}
