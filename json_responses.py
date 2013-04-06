@@ -22,6 +22,7 @@ class JsonResponse(flask.Response):
     # Base class for an HTTP response containing arbitrary JSON content
     
     def __init__ (self, json_data=None):
+    	# json_data must be 'json.dumps'-able
         flask.Response.__init__(
         	self,
         	json.dumps(json_data),

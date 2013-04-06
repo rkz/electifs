@@ -50,9 +50,9 @@ function load_course_ratings (course_div, callback)
 	$.getJSON('/api/ratings?course_id='+course_id, null, function (data) {
 		
 		// prepare and append markup for each rating
-		for (i in data) {
+		for (i in data.ratings) {
 			
-			var rating = data[i];
+			var rating = data.ratings[i];
 			rating.remark = rating.remark.replace(/\n/, '<br />');
 			var markup = $.nano($('#tpl-course-rating').html(), rating);
 			
