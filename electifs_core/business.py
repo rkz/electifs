@@ -2,6 +2,7 @@
 
 from .models import *
 from .utils import *
+import const
 import exceptions as core_exc
 import sqlalchemy.orm.exc as sqla_exc
 from sqlalchemy.orm.util import has_identity
@@ -43,13 +44,12 @@ def get_courses_by_period (periods, group=False):
     Returns the courses for all the given periods. If group is True, will return
     a map {period: [courses]}, else a list of courses.
     
-    periods can be an integer or a list/tuple of integers.
+    periods must be a list/tuple of integers.
     """
     
-    # Ensure that periods is a list of integers between 1 and 12
-    periods = to_int_list(periods)
+    # Ensure that all the periods are within the bounds
     for i in periods:
-        if not ((i >= 1) and (i <= 12)):
+        if not ((i >= const.periods.MIN) and (i <= const.periods.MAX)):
             raise ValueError('Period %s is out of bounds' % (i))
     
     # Fetch courses for the requested periods

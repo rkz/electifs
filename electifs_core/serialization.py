@@ -1,3 +1,6 @@
+"""
+Functions for embedding core objects into JSON responses.
+"""
 from .models import *
 
 

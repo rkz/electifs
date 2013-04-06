@@ -33,7 +33,8 @@ def index ():
 			ratings_count[course.id] = core.count_ratings_for_course(course.id)
 			averages[course.id] = core.get_course_average_rating(course.id)
 	
-	return flask.render_template('index.html',
+	return flask.render_template(
+		'index.html',
 		courses=courses,
 		ratings_count=ratings_count,
 		averages=averages
@@ -90,15 +91,21 @@ def api_post_rating ():
 		try:
 			course = core.get_course(data['course_id'])
 		except core.exceptions.CourseNotFound:
-			return json_responses.PreconditionFailedJsonResponse('course_not_found', 'No course was found with the given course_id.', {'course_id': data['course_id']})
+			return json_responses.PreconditionFailedJsonResponse(
+				'course_not_found',
+				'No course was found with the given course_id.',
+				{'course_id': data['course_id']}
+			)
 		
 		# Initialize and persist the rating
 		# Throws HTTP 412 if this rating conflicts with another from the same student for this course
 		try:
-			rating = core.CourseRating(course=course,
-								       stars=data['stars'],
-									   remark=data['remark'],
-									   student_email=data['student_email'])
+			rating = core.CourseRating(
+				course=course,
+				stars=data['stars'],
+				remark=data['remark'],
+				student_email=data['student_email']
+			)
 			core.save_course_rating(rating)
 			
 		except core.exceptions.ConcurrentRatings:

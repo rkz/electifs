@@ -9,7 +9,6 @@ import datetime
 
 Base = declarative_base()
 
-################################################################################
 
 
 class Course(Base):
@@ -26,7 +25,6 @@ class Course(Base):
     def __repr__ (self):
         return '<Course #%s %s>' % (self.id, self.name)
 
-################################################################################
 
 
 class CourseRating(Base):
@@ -65,5 +63,4 @@ class CourseRating(Base):
     def __repr__ (self):
         return '<CourseRating #%d by %s for course %s>' % (self.id, self.student_email, self.course_id)
 
-################################################################################
 
