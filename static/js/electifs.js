@@ -12,6 +12,7 @@ function toggle_course (course_div)
 	}
 }
 
+
 function open_course (course_div)
 {
 	var course_id = course_div.attr('data-course-id');
@@ -30,6 +31,7 @@ function open_course (course_div)
 	}
 }
 
+
 function close_course (course_div)
 {
 	var course_id = course_div.attr('data-course-id');
@@ -37,6 +39,7 @@ function close_course (course_div)
 	$('.course-ratings', course_div).slideUp();
 	$('.course-name-icon', course_div).removeClass('icon-chevron-up').addClass('icon-chevron-down');
 }
+
 
 function load_course_ratings (course_div, callback)
 {
@@ -65,6 +68,7 @@ function load_course_ratings (course_div, callback)
 	});
 }
 
+
 function show_post_rating_modal (course_id, course_name)
 {
 	// fill in modal dialog with HTML markup
@@ -76,6 +80,7 @@ function show_post_rating_modal (course_id, course_name)
 	
 	// setup interaction
 	$('#modal-post-rating .btn-success').click(function () { post_rating(course_id); });
+	$('#modal-post-rating form').submit(function () { /*post_rating(course_id);*/ return false; });
 	
 	// show dialog
 	$('#modal-post-rating').modal({
@@ -83,6 +88,7 @@ function show_post_rating_modal (course_id, course_name)
 		'keyboard': false
 	});
 }
+
 
 function post_rating (course_id)
 {
@@ -95,14 +101,17 @@ function post_rating (course_id)
 		course_id: course_id,
 		stars: $('#form-stars', dlg).val(),
 		remark: $('#form-remark', dlg).val(),
-		email: $('#form-email', dlg).val()
+		student_email: $('#form-email', dlg).val()
 	};
 	
-	// cleanup data
+	$.post('/api/post-rating', data, function (response, status) {
+		console.log(status);
+		$(dlg).on('hidden', function () { setTimeout(250, function () { location.reload(); }); });
+		$(dlg).modal('hide');
+	});
 	
-	
-	console.log(data);
 }
+
 
 
 $(document).ready(function () {

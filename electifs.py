@@ -2,9 +2,10 @@
 
 import flask
 import json
-import config
 
+import config
 import electifs_core as core
+import json_responses
 
 app = flask.Flask(__name__)
 
@@ -18,7 +19,7 @@ def filter_default (s, value):
 
 
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 def index ():
 	
 	# Get the list of all courses grouped by period
@@ -40,22 +41,77 @@ def index ():
 
 
 
-@app.route('/api/ratings') # expects course_id as URL parameter
+@app.route('/api/ratings', methods=['GET'])
 def api_ratings ():
+	"""
+	Expected URL parameters: course_id
+	"""
 	
-	# Cast URL parameter course_id to integer
 	try:
-		course_id = int(flask.request.args.get('course_id'))
-	except:
-		flask.abort(400) # bad request
+		course_id = flask.request.args.get('course_id')
+		
+		# Load the course (to check that it exists) and the ratings
+		course = core.get_course(course_id)
+		ratings = core.get_ratings_for_course(course_id)
+		
+		# Return as JSON
+		return json.dumps(ratings, default=core.serialize_rating)
 	
-	# Get the list of ratings for this course
-	ratings = core.get_ratings_for_course(course_id)
+	except core.exceptions.CourseNotFound:
+		flask.abort(404)
+
+
+
+@app.route('/api/post-rating', methods=['POST'])
+def api_post_rating ():
+	"""
+	Expected POST body:
+	- course_id
+	- stars (integer between 0 and 5)
+	- remark (text)
+	- student_email without @student.ecp.fr suffix
+	"""
 	
-	# Return as JSON
-	return json.dumps(ratings, default=core.serialize_rating)
+	try:
+		
+		# Validate POST data
+		try:
+			data = {
+				'course_id': flask.request.form['course_id'],
+				'stars': flask.request.form['stars'],
+				'remark': flask.request.form['remark'],
+				'student_email': flask.request.form['student_email'] + '@student.ecp.fr'
+			}
+			# TODO validation (throwing HTTP 400 for errors)
+		except Exception:
+			return json_responses.BadRequestJsonResponse('validation_failed')
+		
+		# Check that the course exists, else throw HTTP 412
+		try:
+			course = core.get_course(data['course_id'])
+		except core.exceptions.CourseNotFound:
+			return json_responses.PreconditionFailedJsonResponse('course_not_found', 'No course was found with the given course_id.', {'course_id': data['course_id']})
+		
+		# Initialize and persist the rating
+		# Throws HTTP 412 if this rating conflicts with another from the same student for this course
+		try:
+			rating = core.CourseRating(course=course,
+								       stars=data['stars'],
+									   remark=data['remark'],
+									   student_email=data['student_email'])
+			core.save_course_rating(rating)
+			
+		except core.exceptions.ConcurrentRatings:
+			return json_responses.PreconditionFailedJsonResponse('concurrent_ratings', 'Another rating for this course with the same student_email already exists.')
+		
+		return json_responses.SuccessJsonResponse()
+	
+	except Exception as e:
+		# Ensures that we always return a JSON response
+		return json_responses.UnknownErrorJsonResponse()
 
 
 
 app.run(debug=True)
+
 

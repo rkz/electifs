@@ -2,8 +2,11 @@
 
 from .models import *
 from .utils import *
+import exceptions as core_exc
+import sqlalchemy.orm.exc as sqla_exc
+from sqlalchemy.orm.util import has_identity
 
-_session = None
+Session = None
 
 
 def get_course (course_id):
@@ -11,7 +14,12 @@ def get_course (course_id):
     Return one Course with the given id.
     """
     
-    return _session.query(Course).filter_by(id=course_id).one()
+    try:
+        return Session().query(Course).filter_by(id=course_id).one()
+    except sqla_exc.NoResultFound:
+        raise core_exc.CourseNotFound(course_id)
+    except:
+        raise core_exc.UnexpectedResult
 
 
 
@@ -21,7 +29,7 @@ def get_all_courses (group=False):
     {period: [courses]}, else a list of courses.
     """
     
-    courses = _session.query(Course).all()
+    courses = Session().query(Course).all()
     
     if group:
         return _group_courses_by_period(courses, True)
@@ -45,7 +53,7 @@ def get_courses_by_period (periods, group=False):
             raise ValueError('Period %s is out of bounds' % (i))
     
     # Fetch courses for the requested periods
-    courses = _session.query(Course).filter(Course.period.in_(periods)).all()
+    courses = Session().query(Course).filter(Course.period.in_(periods)).all()
     
     if group:
         return _group_courses_by_period(courses)
@@ -86,7 +94,7 @@ def get_ratings_for_course (course_id):
     
     course_id = int(course_id)
     
-    return _session.query(CourseRating).filter_by(course_id=course_id).all()
+    return Session().query(CourseRating).filter_by(course_id=course_id).all()
 
 
 
@@ -97,7 +105,7 @@ def count_ratings_for_course (course_id):
     
     course_id = int(course_id)
     
-    return _session.query(CourseRating).filter_by(course_id=course_id).count()
+    return Session().query(CourseRating).filter_by(course_id=course_id).count()
 
 
 
@@ -112,7 +120,7 @@ def get_ratings_for_courses (course_ids=None):
     course_ids = to_int_list(course_ids)
     
     # Prepare query, filter by course_id's if necessary
-    q = _session.query(CourseRating)
+    q = Session().query(CourseRating)
     if len(course_ids) > 0:
         q = q.filter(CourseRating.course_id.in_(course_ids))
     all_ratings = q.all()
@@ -148,4 +156,30 @@ def get_course_average_rating (course_id):
     else:
         return s / len(ratings)
 
+
+
+def save_course_rating (rating):
+    """
+    Saves a course rating.
+    If the rating has not been persisted yet, checks that there is
+    no other rating for this course from this student ("concurrent ratings")
+    """
+    
+    session = Session()
+    
+    # TODO validate rating object
+    
+    # Check that there are no concurrent ratings
+    # (If the object is persisted, this check has already been made and is
+    # therefore no longer needed)
+    if rating.id is None: # not persisted yet
+        q = session.query(CourseRating)\
+              .filter(CourseRating.course_id == rating.course.id)\
+              .filter(CourseRating.student_email == rating.student_email)
+        if q.count() > 0:  # includes current course
+            raise core_exc.ConcurrentRatings(rating.course, rating.student_email)
+    
+    # Persist rating    
+    session.add(rating)
+    session.commit()
 

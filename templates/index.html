@@ -10,7 +10,7 @@
        		<div class="course" data-course-id="{{ course.id }}" data-course-name="{{ course.name }}">
        			<div class="course-heading container">
         			<div class="row">
-        				<div class="span6"><i class="course-name-icon icon-chevron-down"></i> <a class="course-name" href="#">{{course.name}}</a></div>
+        				<div class="span6"><i class="course-name-icon icon-chevron-down"></i> <a class="course-name" href="#" title="course_id = {{course.id}}">{{course.name}}</a></div>
         				<div class="span3">{{course.teacher_name|default('')}}</div>
         				<div class="span3">{% if averages[course.id] %} {{averages[course.id]}} / 5 ({{ratings_count[course.id]}} avis){% endif %}</div>
         			</div>
