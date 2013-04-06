@@ -7,16 +7,14 @@ import exceptions as core_exc
 import sqlalchemy.orm.exc as sqla_exc
 from sqlalchemy.orm.util import has_identity
 
-Session = None
 
-
-def get_course (course_id):
+def get_course (session, course_id):
     """
     Return one Course with the given id.
     """
     
     try:
-        return Session().query(Course).filter_by(id=course_id).one()
+        return session.query(Course).filter_by(id=course_id).one()
     except sqla_exc.NoResultFound:
         raise core_exc.CourseNotFound(course_id)
     except:
@@ -24,22 +22,22 @@ def get_course (course_id):
 
 
 
-def get_all_courses (group=False):
+def get_all_courses (session, group=False):
     """
     Returns a list of all courses. If group is True, will return a map
     {period: [courses]}, else a list of courses.
     """
     
-    courses = Session().query(Course).all()
+    courses = session.query(Course).all()
     
     if group:
-        return _group_courses_by_period(courses, True)
+        return _group_courses_by_period(session, courses, True)
     else:
         return courses
 
 
 
-def get_courses_by_period (periods, group=False):
+def get_courses_by_period (session, periods, group=False):
     """
     Returns the courses for all the given periods. If group is True, will return
     a map {period: [courses]}, else a list of courses.
@@ -53,16 +51,16 @@ def get_courses_by_period (periods, group=False):
             raise ValueError('Period %s is out of bounds' % (i))
     
     # Fetch courses for the requested periods
-    courses = Session().query(Course).filter(Course.period.in_(periods)).all()
+    courses = session.query(Course).filter(Course.period.in_(periods)).all()
     
     if group:
-        return _group_courses_by_period(courses)
+        return _group_courses_by_period(session, courses)
     else:
         return courses
 
 
 
-def _group_courses_by_period (courses, all_periods=False):
+def _group_courses_by_period (session, courses, all_periods=False):
     """
     Groups a list of Course objects into a dictionnary {period: [courses]}
     
@@ -87,29 +85,29 @@ def _group_courses_by_period (courses, all_periods=False):
     return courses_dict
 
 
-def get_ratings_for_course (course_id):
+def get_ratings_for_course (session, course_id):
     """
     Returns the list of ratings for the given course_id
     """
     
     course_id = int(course_id)
     
-    return Session().query(CourseRating).filter_by(course_id=course_id).all()
+    return session.query(CourseRating).filter_by(course_id=course_id).all()
 
 
 
-def count_ratings_for_course (course_id):
+def count_ratings_for_course (session, course_id):
     """
     Returns the number of ratings for the given course_id
     """
     
     course_id = int(course_id)
     
-    return Session().query(CourseRating).filter_by(course_id=course_id).count()
+    return session.query(CourseRating).filter_by(course_id=course_id).count()
 
 
 
-def get_ratings_for_courses (course_ids=None):
+def get_ratings_for_courses (session, course_ids=None):
     """
     Return the list of all ratings for the given course_id's, grouped by course
     
@@ -120,7 +118,7 @@ def get_ratings_for_courses (course_ids=None):
     course_ids = to_int_list(course_ids)
     
     # Prepare query, filter by course_id's if necessary
-    q = Session().query(CourseRating)
+    q = session.query(CourseRating)
     if len(course_ids) > 0:
         q = q.filter(CourseRating.course_id.in_(course_ids))
     all_ratings = q.all()
@@ -138,13 +136,13 @@ def get_ratings_for_courses (course_ids=None):
 
 
 
-def get_course_average_rating (course_id):
+def get_course_average_rating (session, course_id):
     """
     Computes the average mark (in number of stars) for a course
     """
     
     # Get the ratings
-    ratings = get_ratings_for_course(course_id)
+    ratings = get_ratings_for_course(session, course_id)
     
     # Compute the average
     s = 0
@@ -158,14 +156,12 @@ def get_course_average_rating (course_id):
 
 
 
-def save_course_rating (rating):
+def save_course_rating (session, rating):
     """
     Saves a course rating.
     If the rating has not been persisted yet, checks that there is
     no other rating for this course from this student ("concurrent ratings")
     """
-    
-    session = Session()
     
     # TODO validate rating object
     
@@ -176,7 +172,7 @@ def save_course_rating (rating):
         q = session.query(CourseRating)\
               .filter(CourseRating.course_id == rating.course.id)\
               .filter(CourseRating.student_email == rating.student_email)
-        if q.count() > 0:  # includes current course
+        if q.count() > 1:  # includes current course
             raise core_exc.ConcurrentRatings(rating.course, rating.student_email)
     
     # Persist rating    

@@ -22,16 +22,18 @@ def filter_default (s, value):
 @app.route('/', methods=['GET'])
 def index ():
 	
+	session = core.Session()
+	
 	# Get the list of all courses grouped by period
-	courses = core.get_all_courses(True)
+	courses = core.get_all_courses(session, True)
 	
 	# For each course, get the number of ratings and the average
 	ratings_count = {}
 	averages = {}
 	for p, period_courses in courses.items():
 		for course in period_courses:
-			ratings_count[course.id] = core.count_ratings_for_course(course.id)
-			averages[course.id] = core.get_course_average_rating(course.id)
+			ratings_count[course.id] = core.count_ratings_for_course(session, course.id)
+			averages[course.id] = core.get_course_average_rating(session, course.id)
 	
 	return flask.render_template(
 		'index.html',
@@ -48,12 +50,14 @@ def api_ratings ():
 	Expected URL parameters: course_id
 	"""
 	
+	session = core.Session()
+	
 	try:
 		course_id = flask.request.args.get('course_id')
 		
 		# Load the course (to check that it exists) and the ratings
-		course = core.get_course(course_id)
-		ratings = core.get_ratings_for_course(course_id)
+		course = core.get_course(session, course_id)
+		ratings = core.get_ratings_for_course(session, course_id)
 		
 		# Return as JSON
 		return json_responses.SuccessJsonResponse(
@@ -75,6 +79,8 @@ def api_post_rating ():
 	- student_email without @student.ecp.fr suffix
 	"""
 	
+	session = core.Session()
+	
 	# Validate POST data
 	try:
 		data = {
@@ -89,7 +95,7 @@ def api_post_rating ():
 	
 	# Check that the course exists, else throw HTTP 412
 	try:
-		course = core.get_course(data['course_id'])
+		course = core.get_course(session, data['course_id'])
 	except core.exceptions.CourseNotFound:
 		return json_responses.PreconditionFailedJsonResponse(
 			'course_not_found',
@@ -106,7 +112,7 @@ def api_post_rating ():
 			remark=data['remark'],
 			student_email=data['student_email']
 		)
-		core.save_course_rating(rating)
+		core.save_course_rating(session, rating)
 		
 	except core.exceptions.ConcurrentRatings:
 		return json_responses.PreconditionFailedJsonResponse('concurrent_ratings', 'Another rating for this course with the same student_email already exists.')
