@@ -85,25 +85,31 @@ def _group_courses_by_period (session, courses, all_periods=False):
     return courses_dict
 
 
-def get_ratings_for_course (session, course_id):
+def get_ratings_for_course (session, course_id, active_ratings=True):
     """
     Returns the list of ratings for the given course_id
     """
     
     course_id = int(course_id)
     
-    return session.query(CourseRating).filter_by(course_id=course_id).all()
+    q = session.query(CourseRating).filter_by(course_id=course_id)
+    if active_ratings:
+        q = q.filter_by(is_verified=True).filter_by(is_verified=True)
+    return q.all()
 
 
 
-def count_ratings_for_course (session, course_id):
+def count_ratings_for_course (session, course_id, active_ratings=True):
     """
     Returns the number of ratings for the given course_id
     """
     
     course_id = int(course_id)
     
-    return session.query(CourseRating).filter_by(course_id=course_id).count()
+    q = session.query(CourseRating).filter_by(course_id=course_id)
+    if active_ratings:
+        q = q.filter_by(is_verified=True).filter_by(is_verified=True)
+    return q.count()
 
 
 
@@ -149,7 +155,7 @@ def get_course_average_rating (session, course_id):
     for rating in ratings:
         s += rating.stars
     
-    if s == 0:
+    if len(ratings) == 0:
         return None
     else:
         return s / len(ratings)
