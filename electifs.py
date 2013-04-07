@@ -87,7 +87,7 @@ def api_post_rating ():
 			'course_id': flask.request.form['course_id'],
 			'stars': flask.request.form['stars'],
 			'remark': flask.request.form['remark'],
-			'student_email': flask.request.form['student_email'] + '@student.ecp.fr'
+			'student_email': flask.request.form['student_email'] + core.const.EMAIL_SUFFIX
 		}
 		# TODO validation (throwing HTTP 400 for errors)
 	except Exception:
@@ -115,12 +115,15 @@ def api_post_rating ():
 		core.save_course_rating(session, rating)
 		
 	except core.exceptions.ConcurrentRatings:
-		return json_responses.PreconditionFailedJsonResponse('concurrent_ratings', 'Another rating for this course with the same student_email already exists.')
+		return json_responses.PreconditionFailedJsonResponse(
+			'concurrent_ratings',
+			'Another rating for this course with the same student_email already exists.'
+		)
 	
 	return json_responses.SuccessJsonResponse()
 
 
 
-app.run(debug=True)
+app.run(debug=False)
 
 
