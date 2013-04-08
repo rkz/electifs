@@ -41,6 +41,11 @@ a.course-name {
     background-color: #f6f6f6;
 }
 
+.course-rating-pending {
+    background-color: rgb(233, 222, 165) !important;
+    border-bottom: 1px solid #f9f9f9;
+}
+
 .course-rating-remark {
     padding: 1ex 3em 1.5ex 2em;
 }

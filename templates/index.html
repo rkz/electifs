@@ -32,11 +32,32 @@
 </div>
 
 <div class="template" id="tpl-course-rating">
-    <div class="course-rating container">
+    <div class="course-rating container" id="rating-{rating_id}">
         <div class="row">
             <div class="span9"><div class="course-rating-remark">{remark}</div></div>
             <div class="span3"><div class="course-rating-stars">{stars} / 5</div></div>
         </div>
+    </div>
+</div>
+
+<div id="modal-admin-login" class="modal fade">
+    <div class="modal-header">
+        <h3>Mode administrateur</h3>
+    </div>
+    <div class="modal-body">
+        <form id="form-admin-login" class="form-horizontal">
+            <div class="control-group">
+                <label class="control-label">Électif :</label>
+                <div class="controls"><input type="password" id="password" /></div>
+            </div>
+        </form>
+        <div class="alert alert-error" style="display: none;">
+            Mot de passe incorrect.
+        </div>
+    </div>
+    <div class="modal-footer">
+        <a href="#" data-dismiss="modal" style="float: left;">Annuler</a>
+        <button type="button" class="btn btn-success">Connexion</button>
     </div>
 </div>
 

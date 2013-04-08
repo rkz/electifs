@@ -1,6 +1,6 @@
 {% include 'macros.html' %}
 <!DOCTYPE html>
-<html lang="fr" ng-app>
+<html lang="fr">
 <head>
     <title>Électifs ECP</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,9 +13,14 @@
     <div class="navbar navbar-fixed-top navbar-inverse">
         <div class="navbar-inner">
             <div class="container">
-                <a class="brand" href="#">Électifs ECP</a>
+                <a class="brand" href="#">Électifs ECP{% if admin_mode %} (administration){% endif %}</a>
                 <ul class="nav">
                     <li><a href="#"><i class="icon-info-sign"></i> À propos</a>
+                    {% if not admin_mode %}
+                        <li><a id="link-admin-login" href="#">Administration</a></li>
+                    {% else %}
+                        <li><a id="link-admin-logout" href="#">Quitter le mode administrateur</a></li>
+                    {% endif %}
                 </ul>
             </div>
         </div>

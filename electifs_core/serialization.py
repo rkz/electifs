@@ -17,6 +17,7 @@ def serialize_rating (rating):
         'remark': rating.remark,
         'posted_on': rating.posted_on.strftime('%Y-%m-%d %H:%i:%s') if rating.posted_on else None,
         'is_verified': rating.is_verified,
-        'is_accepted': rating.is_accepted
+        'is_accepted': rating.is_accepted,
+        'is_active': rating.is_verified and rating.is_accepted
     }
 

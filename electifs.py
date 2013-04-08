@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import flask
-import json
 
 import config
 import electifs_core as core
 import json_responses
 
 app = flask.Flask(__name__)
+app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
 
 @app.template_filter('default')
@@ -39,7 +39,8 @@ def index ():
         'index.html',
         courses=courses,
         ratings_count=ratings_count,
-        averages=averages
+        averages=averages,
+        admin_mode=admin_mode()
     )
 
 
@@ -47,20 +48,21 @@ def index ():
 @app.route('/api/ratings', methods=['GET'])
 def api_ratings ():
     """
-    Expected URL parameters: course_id
+    Returns the list of ratings for a course. In non-admin mode, will only return the
+    active ratings.
+
+    Mandatory URL parameters:
+    - course_id
     """
 
     session = core.Session()
-
-    courses = core.get_all_courses(session)
-
 
     try:
         course_id = flask.request.args.get('course_id')
 
         # Load the course (to check that it exists) and the ratings
         course = core.get_course(session, course_id)
-        ratings = core.get_ratings_for_course(session, course_id)
+        ratings = core.get_ratings_for_course(session, course_id, not admin_mode())
 
         # Return as JSON
         return json_responses.SuccessJsonResponse(
@@ -68,14 +70,16 @@ def api_ratings ():
         )
 
     except core.exceptions.CourseNotFound:
-        flask.abort(404)
+        flask.abort(412)
 
 
 
 @app.route('/api/post-rating', methods=['POST'])
 def api_post_rating ():
     """
-    Expected POST body:
+    Posts a rating on a course.
+
+    Mandatory POST parameters:
     - course_id
     - stars (integer between 0 and 5)
     - remark (text)
@@ -129,6 +133,50 @@ def api_post_rating ():
 
 
 
-app.run(debug=False)
+@app.route('/api/admin/login', methods=['GET'])
+def api_admin_login ():
+    """
+    Switched to admin mode if the provided password is correct.
+
+    Mandatory GET parameters:
+    - password
+    """
+
+    password = flask.request.args.get('password', None)
+
+    if unicode(password) == unicode(config.ADMIN_PASSWORD):
+        flask.session['admin_mode'] = True
+        return json_responses.SuccessJsonResponse()
+    else:
+        flask.session['admin_mode'] = False
+        return json_responses.PreconditionFailedJsonResponse(
+            'wrong_password',
+            'Incorrect password, could not log in.'
+        )
+
+
+
+@app.route('/api/admin/logout', methods=['GET'])
+def api_admin_logout():
+    """
+    Leaves admin mode regardless of the previous state of the application.
+    """
+    flask.session['admin_mode'] = False
+    return json_responses.SuccessJsonResponse()
+
+
+
+def admin_mode ():
+    """
+    Returns True if the application is in admin mode, False otherwise.
+    """
+    try:
+        return flask.session['admin_mode']
+    except IndexError:
+        return False
+
+
+
+app.run(debug=True)
 
 

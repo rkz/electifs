@@ -57,6 +57,9 @@ function load_course_ratings (course_div, callback)
             var markup = $.nano($('#tpl-course-rating').html(), rating);
 
             $('.course-ratings', course_div).prepend(markup);
+
+            if (!rating.is_active)
+                $('#rating-' + rating.rating_id).addClass('course-rating-pending');
         }
 
         // if provided, call the callback function after 5ms to let the
@@ -113,9 +116,41 @@ function post_rating (course_id)
 }
 
 
+function admin_login ()
+{
+    var password = $('#modal-admin-login #password').val();
+    $.get('/api/admin/login', { 'password': password }, function (response, status) {
+        // Success
+        location.reload();
+    }).error(function () {
+        // Error (wrong password or whatever)
+        $('#modal-admin-login .alert').show();
+    });
+}
+
+
+function admin_logout ()
+{
+    $.get('/api/admin/logout', null, function (response, status) {
+        location.reload();
+    });
+}
+
+
 
 $(document).ready(function () {
 
+    // Setup admin login/logout link
+    $('#link-admin-login').click(function () { $('#modal-admin-login').modal('show'); });
+    $('#link-admin-logout').click(admin_logout);
+
+    // Admin login modal behavior
+    $('#modal-admin-login input').keydown(function () { $('#modal-admin-login .alert').hide(); });
+    $('#modal-admin-login button').click(admin_login);
+    $('#modal-admin-login form').submit(admin_login);
+
+
+    // Setup courses
     $('.course').each(function () {
 
         var course_div = $(this);
