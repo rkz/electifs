@@ -22,13 +22,13 @@ class JsonResponse(flask.Response):
     # Base class for an HTTP response containing arbitrary JSON content
     
     def __init__ (self, json_data=None):
-    	# json_data must be 'json.dumps'-able
+        # json_data must be 'json.dumps'-able
         flask.Response.__init__(
-        	self,
-        	json.dumps(json_data),
-        	self.status_code,
-        	None,
-        	mimetype='text/json'
+            self,
+            json.dumps(json_data),
+            self.status_code,
+            None,
+            mimetype='text/json'
         )
 
 
@@ -68,9 +68,9 @@ class ErrorJsonResponse (JsonResponse):
 
 
 class BadRequestJsonResponse (ErrorJsonResponse):
-	# JSON response for HTTP 'bad request' (status code 400)
-	# Use case: some GET or POST parameters are missing or have a bad syntax
-	# (e.g. a number was expected and the provided value is a string)
+    # JSON response for HTTP 'bad request' (status code 400)
+    # Use case: some GET or POST parameters are missing or have a bad syntax
+    # (e.g. a number was expected and the provided value is a string)
     
     def __init__ (self, error_code, error_message='', error_details=None, specific_data=None):
         self.status_code = 400

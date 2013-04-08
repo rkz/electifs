@@ -9,7 +9,7 @@
     background-repeat:no-repeat;
 }
 .ui-rating a {
-	cursor: pointer;
+    cursor: pointer;
 }
 .ui-rating-full  {
     background-position:left top;
@@ -36,8 +36,8 @@
 }
 
 .ui-selected-value {
-	background-color: #EEEEEE;
-	margin-left: 150px;
-	text-align: center;
-	width: 60px;
+    background-color: #EEEEEE;
+    margin-left: 150px;
+    text-align: center;
+    width: 60px;
 }
