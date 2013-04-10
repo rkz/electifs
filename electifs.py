@@ -7,7 +7,9 @@ import electifs_core as core
 import json_responses
 
 app = flask.Flask(__name__)
-app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
+app.secret_key = config.APP_SECRET_KEY
+
+core.connect(config.DB_CONNECTION_STRING)
 
 
 @app.template_filter('default')
@@ -177,6 +179,6 @@ def admin_mode ():
 
 
 
-app.run(debug=True)
+app.run(debug=config.DEBUG_MODE)
 
 
