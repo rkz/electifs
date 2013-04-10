@@ -174,7 +174,7 @@ def admin_mode ():
     """
     try:
         return flask.session['admin_mode']
-    except IndexError:
+    except:
         return False
 
 
